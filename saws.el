@@ -4,7 +4,7 @@
 ;; Maintainer: Laurence Warne
 ;; Version: 0.1
 ;; Homepage: https://github.com/laurencewarne/saws.el
-;; Package-Requires: ((emacs "27.0") (tablist "1.0") (transient "0.3.7"))
+;; Package-Requires: ((emacs "27.0") (tablist "1.0") (transient "0.3.7") (dash "2.17.0"))
 
 ;;; Commentary:
 
@@ -14,6 +14,7 @@
 
 (require 'json)
 (require 'transient)
+(require 'dash)
 
 (defvar saws-stack-columns [("Name" 20 t) ("Status" 10 t)])
 
@@ -44,7 +45,8 @@
    ("t" "template file" "--template-file " read-string)]
   ["Optional Arguments"
    ("c" "capabilities" "--capabilities " read-string)
-   ("n" "no execute changeset" "--no-execute-changeset")]
+   ("n" "no execute changeset" "--no-execute-changeset")
+   ("p" "parameters" "--parameters-overrides " read-string)]
   ["Actions"
    ("d" "deploy" saws-deploy-run)
    ("o" "open aws console" saws-deploy-open-console)])
