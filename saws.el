@@ -20,13 +20,6 @@
 
 (transient-define-prefix saws-cloudformation ()
   "Transient for running cloudformation commands."
-  ;;:man-page "docker-image-pull"
-  ["Actions"
-   ("d" "deploy" ignore)
-   ("D" "delete-stack" ignore)])
-
-(transient-define-prefix saws-cloudformation ()
-  "Transient for running cloudformation commands."
   ;;:man-page "aws cloudformation deploy help"
   ["Actions"
    ("d" "deploy" saws-deploy)
@@ -46,7 +39,7 @@
   ["Optional Arguments"
    ("c" "capabilities" "--capabilities " read-string)
    ("n" "no execute changeset" "--no-execute-changeset")
-   ("p" "parameters" "--parameters-overrides " read-string)]
+   ("p" "parameters" "--parameter-overrides " read-string)]
   ["Actions"
    ("d" "deploy" saws-deploy-run)
    ("o" "open aws console" saws-deploy-open-console)])
@@ -109,7 +102,7 @@
           (set-process-sentinel (start-process-shell-command "" nil cmd)
                                 (lambda (&rest) (tablist-revert))))))))
 
-(defun saws-deploy-open-console (&rest _)
+(defun saws-deploy-open-console (&rest args)
   "Open the aws deploy page in the aws console."
   (interactive (list (transient-args transient-current-command)))
   (browse-url "https://console.aws.amazon.com/cloudformation/home?region=us-east-1#/stacks?filteringStatus=active&filteringText=&viewNested=true&hideStacks=false"))
