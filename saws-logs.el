@@ -50,25 +50,15 @@
   (interactive
    (list
     (completing-read "Log group name: " (saws-log-group-names))))
-  (let* ((name (format "AWS logs for '%s'" log-group-name))
-         (buf (generate-new-buffer name))
-         ;; https://awscli.amazonaws.com/v2/documentation/api/latest/reference/logs/tail.html
-         (proc (start-process name
-                              buf
-                              "aws"
-                              "logs"
-                              "tail"
-                              log-group-name
-                              "--since" "1d"
-                              "--color" "on"
-                              "--format" "short"
-                              "--follow"
-                              "--region" saws-region
-                              "--profile" saws-profile)))
-    (with-current-buffer buf
-      (ansi-color-for-comint-mode-on)
-      (comint-mode)
-      (set-process-filter proc 'comint-output-filter))
+  (let* ((buf (saws-async-aws-process
+               log-group-name
+               "logs"
+               (list "tail"
+                     log-group-name
+                     "--since" "1d"
+                     "--color" "on"
+                     "--format" "short"
+                     "--follow"))))
     (display-buffer buf '(display-buffer-reuse-window . nil))))
 
 (provide 'saws-logs)

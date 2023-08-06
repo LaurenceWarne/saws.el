@@ -116,7 +116,7 @@
         (when (yes-or-no-p (format "Delete stack '%s'?" stack))
           (message "Running '%s'" cmd)
           (set-process-sentinel (start-process-shell-command "" nil cmd)
-                                (lambda (&rest) (tablist-revert))))))))
+                                (lambda (&rest _) (tablist-revert))))))))
 
 ;;;###autoload
 (defun saws-deploy-open-console (&rest args)

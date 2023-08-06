@@ -30,11 +30,33 @@
 
 (defun saws-aws-command (command)
   "Run the aws command COMMAND."
-  (let ((cmd (format "AWS_PROFILE=%s AWS_REGION=%s aws %s"
+  (let ((cmd (format "aws %s --profile %s --region %s"
+                     command
                      saws-profile
-                     saws-region
-                     command)))
+                     saws-region)))
     (shell-command-to-string cmd)))
+
+(defun saws-async-aws-process (name command args)
+  "Run the aws command COMMAND with ARGS, and return the process buffer.
+
+The buffer and process will have NAME."
+  (let* ((name (format "AWS %s for '%s'" command name))
+         (buf (generate-new-buffer name))
+         ;; https://awscli.amazonaws.com/v2/documentation/api/latest/reference/logs/tail.html
+         (proc (apply #'start-process
+                      name
+                      buf
+                      "aws"
+                      command
+                      (append args
+                              (list"--region" saws-region
+                                   "--profile" saws-profile)))))
+    (with-current-buffer buf
+      (ansi-color-for-comint-mode-on)
+      (comint-mode)
+      (set-process-filter proc 'comint-output-filter))
+    buf))
+
 
 (defun saws-aws-command-to-json (command)
   "Run the aws command COMMAND and read into a json object."
