@@ -79,16 +79,18 @@
   "Get the user's default region."
   (string-trim-right (shell-command-to-string "aws configure get region")))
 
+;;;###autoload
 (defun saws-deploy-run (args)
-  "Run 'aws cloudformation deploy' using ARGS."
+  "Run \\='aws cloudformation deploy\\=' using ARGS."
   (interactive (list (transient-args transient-current-command)))
   (let ((cmd (concat "aws cloudformation deploy "
                      (mapconcat #'identity args " "))))
     (message "Running command: '%s'" cmd)
     (async-shell-command cmd)))
 
+;;;###autoload
 (defun saws-describe-stacks (args)
-  "Run 'aws cloudformation describe-stacks' using ARGS."
+  "Run \\='aws cloudformation describe-stacks\\=' using ARGS."
   (interactive (list (transient-args transient-current-command)))
   (let* ((output (shell-command-to-string
                   "AWS_REGION=us-east-1 aws cloudformation describe-stacks"))
@@ -101,6 +103,7 @@
                  json))
     (tablist-revert)))
 
+;;;###autoload
 (defun saws-delete-stack ()
   "Delete the marked stacks."
   (interactive)
@@ -115,6 +118,7 @@
           (set-process-sentinel (start-process-shell-command "" nil cmd)
                                 (lambda (&rest) (tablist-revert))))))))
 
+;;;###autoload
 (defun saws-deploy-open-console (&rest args)
   "Open the aws deploy page in the aws console."
   (interactive (list (transient-args transient-current-command)))

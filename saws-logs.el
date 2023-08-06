@@ -44,11 +44,13 @@
   (--map (alist-get 'logGroupName it)
          (append (cdar (saws-aws-command-to-json "logs describe-log-groups")))))
 
-(defun saws-open-log-group ()
-  "Open a log group."
-  (interactive)
-  (let* ((log-group-name (completing-read "Log group name: " (saws-log-group-names)))
-         (name (format "AWS logs for '%s'" log-group-name))
+;;;###autoload
+(defun saws-open-log-group (log-group-name)
+  "Open the log group with LOG-GROUP-NAME."
+  (interactive
+   (list
+    (completing-read "Log group name: " (saws-log-group-names))))
+  (let* ((name (format "AWS logs for '%s'" log-group-name))
          (buf (generate-new-buffer name))
          ;; https://awscli.amazonaws.com/v2/documentation/api/latest/reference/logs/tail.html
          (proc (start-process name
