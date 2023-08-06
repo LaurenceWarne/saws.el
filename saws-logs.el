@@ -32,34 +32,73 @@
 (require 'dash)
 (require 'saws)
 
+(defcustom saws-logs-since "1h"
+  "By default, from what time to begin displaying logs.
+
+The value provided can be an ISO 8601 timestamp or a relative time."
+  :group 'saws
+  :type 'string)
+
+(defvar-local saws--log-group-name nil)
+
 (transient-define-prefix saws-logs ()
   "Transient for interacting with logs."
   ["Actions"
-   ("l" "open log group" saws-open-log-group)
+   ("l" "open log group" saws-logs-open-log-group)
    ("o" "open aws console" saws-logs-open-console)
    ("O" "open documentation for resource" ignore)])
 
-(defun saws-log-group-names ()
+(defvar saws-logs-output-mode-map
+  (let ((map (make-sparse-keymap)))
+    (suppress-keymap map t)
+    (define-key map "o" #'saws-logs-open-console)
+    (define-key map "q" #'saws-logs-cloudwatch-query)
+    (define-key map "t" #'saws-logs-change-time-period)
+    map))
+
+(define-derived-mode saws-logs-output-mode saws-command-output-mode "Saws-Logs-Output"
+  "Major mode for AWS logs output."
+  :group 'saws)
+
+(defun saws-logs-log-group-names ()
   "Return a list of all log group names."
   (--map (alist-get 'logGroupName it)
          (append (cdar (saws-aws-command-to-json "logs describe-log-groups")))))
 
 ;;;###autoload
-(defun saws-open-log-group (log-group-name)
+(defun saws-logs-open-console (&optional log-group-name)
+  "Open the log group with LOG-GROUP-NAME in the AWS console."
+  (interactive)
+  (browse-url "https://console.aws.amazon.com/cloudwatch"))
+
+;;;###autoload
+(defun saws-logs-cloudwatch-query (&optional log-group-name query-string)
+  "Open the cloudwatch console for LOG-GROUP-NAME"
+  (interactive)
+  (browse-url "https://console.aws.amazon.com/cloudwatch"))
+
+;;;###autoload
+(defun saws-logs-change-time-period (&optional period)
+  (interactive))
+
+;;;###autoload
+(defun saws-logs-open-log-group (log-group-name)
   "Open the log group with LOG-GROUP-NAME."
   (interactive
    (list
-    (completing-read "Log group name: " (saws-log-group-names))))
+    ;; TODO figure out how to show last written to on another completing read column
+    (completing-read "Log group name: " (saws-logs-log-group-names))))
   ;; https://awscli.amazonaws.com/v2/documentation/api/latest/reference/logs/tail.html
   (let* ((buf (saws-async-aws-process
                log-group-name
                "logs"
                (list "tail"
                      log-group-name
-                     "--since" "1d"
+                     "--since" saws-logs-since
                      "--color" "on"
                      "--format" "short"
-                     "--follow"))))
+                     "--follow")
+               #'saws-logs-output-mode)))
     (display-buffer buf '(display-buffer-reuse-window . nil))))
 
 (provide 'saws-logs)

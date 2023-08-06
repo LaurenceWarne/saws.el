@@ -29,11 +29,14 @@
   :group 'saws
   :type 'string)
 
-(define-derived-mode saws-command-output-mode comint-mode "saws Command Mode"
+(define-derived-mode saws-command-output-mode comint-mode "Saws-Command"
   "Major mode for AWS cli command output."
+  :group 'saws
   (ansi-color-for-comint-mode-on)
   (comint-mode)
-  (set-process-filter (get-buffer-process (current-buffer)) 'comint-output-filter))
+  (set-process-filter (get-buffer-process (current-buffer)) 'comint-output-filter)
+  (buffer-disable-undo)
+  (setq buffer-read-only t))
 
 (defun saws-aws-command (command)
   "Run the aws command COMMAND."
