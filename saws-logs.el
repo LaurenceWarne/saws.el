@@ -50,6 +50,7 @@
   (interactive
    (list
     (completing-read "Log group name: " (saws-log-group-names))))
+  ;; https://awscli.amazonaws.com/v2/documentation/api/latest/reference/logs/tail.html
   (let* ((buf (saws-async-aws-process
                log-group-name
                "logs"
