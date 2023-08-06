@@ -67,10 +67,14 @@ The value provided can be an ISO 8601 timestamp or a relative time."
 
 ;;;###autoload
 (defun saws-logs-open-console (&optional log-group-name)
-  "Open the log group with LOG-GROUP-NAME in the AWS console."
+  "Open the log group with LOG-GROUP-NAME in the AWS console.
+
+If LOG-GROUP-NAME is nil, fallback to `saws--log-group-name', if that is nil
+open the cloudwatch console."
   ;; Note `read-extended-command-predicate' has to be set for the second arg to
   ;; `interactive' to matter
-  (interactive nil saws-logs-output-mode)
+  (interactive (list saws--log-group-name) saws-logs-output-mode)
+  (message "Opening '%s'" log-group-name)
   (browse-url "https://console.aws.amazon.com/cloudwatch"))
 
 ;;;###autoload
@@ -101,6 +105,7 @@ The value provided can be an ISO 8601 timestamp or a relative time."
                      "--format" "short"
                      "--follow")
                #'saws-logs-output-mode)))
+    (with-current-buffer buf (setq-local saws--log-group-name log-group-name))
     (display-buffer buf '(display-buffer-reuse-window . nil))))
 
 (provide 'saws-logs)
