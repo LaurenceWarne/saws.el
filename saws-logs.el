@@ -68,18 +68,20 @@ The value provided can be an ISO 8601 timestamp or a relative time."
 ;;;###autoload
 (defun saws-logs-open-console (&optional log-group-name)
   "Open the log group with LOG-GROUP-NAME in the AWS console."
-  (interactive)
+  ;; Note `read-extended-command-predicate' has to be set for the second arg to
+  ;; `interactive' to matter
+  (interactive nil saws-logs-output-mode)
   (browse-url "https://console.aws.amazon.com/cloudwatch"))
 
 ;;;###autoload
 (defun saws-logs-cloudwatch-query (&optional log-group-name query-string)
   "Open the cloudwatch console for LOG-GROUP-NAME"
-  (interactive)
+  (interactive "query: " saws-logs-output-mode)
   (browse-url "https://console.aws.amazon.com/cloudwatch"))
 
 ;;;###autoload
 (defun saws-logs-change-time-period (&optional period)
-  (interactive))
+  (interactive "period: " saws-logs-output-mode))
 
 ;;;###autoload
 (defun saws-logs-open-log-group (log-group-name)
