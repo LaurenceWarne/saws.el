@@ -75,15 +75,21 @@ mode."
            "aws"
            command
            (append args
-                   (list"--region" saws-region
-                        "--profile" saws-profile)))
+                   (list "--region" saws-region
+                         "--profile" saws-profile)))
     (with-current-buffer buf (if mode (funcall mode) (saws-command-output-mode)))
     buf))
 
-
 (defun saws-aws-command-to-json (command)
   "Run the aws command COMMAND and read into a json object."
-  (json-read-from-string (saws-aws-command command)))
+  (let ((command-output (saws-aws-command command)))
+    (condition-case err
+        (json-read-from-string command-output)
+      (error (message
+              "Encountered error '%s' whilst running command '%s', output: '%s'"
+              err
+              command
+              command-output)))))
 
 (provide 'saws-core)
 ;;; saws-core.el ends here
