@@ -30,7 +30,7 @@
 (require 'ansi-color)
 (require 'transient)
 (require 'dash)
-(require 'saws)
+(require 'saws-core)
 
 (defcustom saws-logs-since "1h"
   "By default, from what time to begin displaying logs.

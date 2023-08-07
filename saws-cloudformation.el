@@ -27,7 +27,7 @@
 
 ;;; Code:
 
-(require 'saws)
+(require 'saws-core)
 
 (defvar saws-stack-columns [("Name" 20 t) ("Status" 10 t)])
 
