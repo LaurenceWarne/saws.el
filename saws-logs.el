@@ -75,7 +75,10 @@ open the cloudwatch console."
   ;; `interactive' to matter
   (interactive (list saws--log-group-name) saws-logs-output-mode)
   (message "Opening '%s'" log-group-name)
-  (browse-url "https://console.aws.amazon.com/cloudwatch"))
+  (browse-url (format "https://%s.console.aws.amazon.com/cloudwatch/?region=%1$s#logsV2:log-groups/log-group/%s"
+                      saws-region
+                      ;; https://stackoverflow.com/questions/60796991/is-there-a-way-to-generate-the-aws-console-urls-for-cloudwatch-log-group-filters
+                      (s-replace "/" "$252F" log-group-name))))
 
 ;;;###autoload
 (defun saws-logs-cloudwatch-query (&optional log-group-name query-string)
