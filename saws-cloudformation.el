@@ -31,6 +31,7 @@
 
 (defvar saws-stack-columns [("Name" 20 t) ("Status" 10 t)])
 
+;;;###autoload (autoload 'saws "saws-cloudformation" nil t)
 (transient-define-prefix saws-cloudformation ()
   "Transient for running cloudformation commands."
   ;;:man-page "aws cloudformation deploy help"
@@ -40,6 +41,7 @@
    ("o" "open aws console" saws-deploy-open-console)
    ("O" "open documentation for resource" ignore)])
 
+;;;###autoload (autoload 'saws "saws-cloudformation" nil t)
 (transient-define-prefix saws-deploy ()
   "Transient for running cloudformation deploy commands."
   ;;:man-page "aws cloudformation deploy help"
