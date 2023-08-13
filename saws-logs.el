@@ -44,9 +44,17 @@ The value provided can be an ISO 8601 timestamp or a relative time."
 (transient-define-prefix saws-logs ()
   "Transient for interacting with logs."
   ["Actions"
-   ("l" "open log group" saws-logs-open-log-group)
-   ("o" "open aws console" saws-logs-open-console)
-   ("O" "open documentation for resource" ignore)])
+   ("l" "Open log group" saws-logs-open-log-group)
+   ("o" "Open aws console" saws-logs-open-console)
+   ("O" "Open documentation for resource" ignore)])
+
+(transient-define-prefix saws-logs-mode-menu ()
+  "Transient for interacting with logs."
+  ["AWS Console"
+   ("o" "Open log group on the AWS console" saws-logs-open-console)
+   ("q" "Run a Cloudwatch query" saws-logs-cloudwatch-query-dwim)]
+  ["Change Parameters"
+   ("t" "Change the time period" saws-logs-change-time-period)])
 
 (defvar saws-logs-output-mode-map
   (let ((map (make-sparse-keymap)))
@@ -54,6 +62,7 @@ The value provided can be an ISO 8601 timestamp or a relative time."
     (define-key map "o" #'saws-logs-open-console)
     (define-key map "q" #'saws-logs-cloudwatch-query)
     (define-key map "t" #'saws-logs-change-time-period)
+    (define-key map "?" #'saws-logs-mode-menu)
     map))
 
 (define-derived-mode saws-logs-output-mode saws-command-output-mode "Saws-Logs-Output"
@@ -81,9 +90,16 @@ open the cloudwatch console."
                       (s-replace "/" "$252F" log-group-name))))
 
 ;;;###autoload
-(defun saws-logs-cloudwatch-query (&optional log-group-name query-string)
-  "Open the cloudwatch console for LOG-GROUP-NAME"
-  (interactive "query: " saws-logs-output-mode)
+(defun saws-logs-cloudwatch-query-dwim (&optional log-group-name query-string)
+  "Open the cloudwatch console for LOG-GROUP-NAME.
+
+If QUERY-STRING is specified, preset the query to filter on it."
+  (interactive
+   "query: "
+   (list saws--log-group-name (when (region-active-p) (buffer-substring-no-properties
+                                                       (region-beginning) (region-end))))
+   saws-logs-output-mode)
+  (when query-string (message "Using preset filter sting '%s'" query-string))
   (browse-url "https://console.aws.amazon.com/cloudwatch"))
 
 ;;;###autoload
