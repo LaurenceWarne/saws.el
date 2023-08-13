@@ -44,6 +44,12 @@
   :group 'saws
   :type 'string)
 
+(defvar-local saws--region nil
+  "Like `saws-region', but specific to the current buffer.")
+
+(defvar-local saws--profile nil
+  "Like `saws-profile', but specific to the current buffer.")
+
 (define-derived-mode saws-command-output-mode comint-mode "Saws-Command"
   "Major mode for AWS cli command output."
   :group 'saws
@@ -51,7 +57,9 @@
   (comint-mode)
   (set-process-filter (get-buffer-process (current-buffer)) 'comint-output-filter)
   (buffer-disable-undo)
-  (setq buffer-read-only t))
+  (setq buffer-read-only t)
+  (setq-local saws--profile saws-profile
+              saws--region saws-region))
 
 (defun saws-aws-command (command)
   "Run the aws command COMMAND."
