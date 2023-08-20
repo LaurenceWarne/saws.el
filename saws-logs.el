@@ -39,6 +39,16 @@ The value provided can be an ISO 8601 timestamp or a relative time."
   :group 'saws
   :type 'string)
 
+(defface saws-logs-log-group-headerline
+  '((t (:foreground "green")))
+  "Face used in log buffer headerlines for \"Log Group\".")
+
+(defface saws-logs-since-headerline
+  '((t (:foreground "green")))
+  "Face used in log buffer headerlines for \"Since\".")
+
+(defconst saws-logs-time-strings '("1m" "5m" "1h" "2h" "1d"))
+
 (defvar-local saws--log-group-name nil)
 
 (transient-define-prefix saws-logs ()
@@ -74,6 +84,23 @@ The value provided can be an ISO 8601 timestamp or a relative time."
   (--map (alist-get 'logGroupName it)
          (append (cdar (saws-aws-command-to-json "logs describe-log-groups")))))
 
+
+;; https://repost.aws/questions/QUkdGEQP7rQZmDBUaB2Ai2Qg/aws-cloudwatch-log-insights-generate-url
+
+;; (defun saws-logs--cloudwatch-query-string (start end filter)
+;;   ;; %7E%28end
+;;   (concat (url-hexify-string "~(end~'")
+;;           s(end.toUTC().toISO())
+;;           p("~start~'")
+;;           s(start.toUTC().toISO())
+;;           ;; Or use UTC instead of Local
+;;           + p(`~timeType~'${timeType}~tz~'Local~editorString~'`)
+;;           + s(expression)
+;;           + p('~isLiveTail~false~queryId~\'')
+;;           + s(queryDefinitionId)
+;;           + p("~source~(~'") + s(sourceGroup) + p(')')
+;;   + p(')');))
+
 ;;;###autoload
 (defun saws-logs-open-console (&optional log-group-name)
   "Open the log group with LOG-GROUP-NAME in the AWS console.
@@ -107,24 +134,42 @@ If QUERY-STRING is specified, preset the query to filter on it."
   (interactive "period: " saws-logs-output-mode))
 
 ;;;###autoload
-(defun saws-logs-open-log-group (log-group-name)
-  "Open the log group with LOG-GROUP-NAME."
+(defun saws-logs-open-log-group (log-group-name since)
+  "Open the log group with LOG-GROUP-NAME from SINCE."
   (interactive
    (list
     ;; TODO figure out how to show last written to on another completing read column
-    (completing-read "Log group name: " (saws-logs-log-group-names))))
+    (completing-read "Log group name: " (saws-logs-log-group-names))
+    (completing-read "Since: "
+                     (append saws-logs-time-strings
+                             (and (member saws-logs-since saws-logs-time-strings)
+                                  (list saws-logs-since)))
+                     nil
+                     nil
+                     saws-logs-since)))
   ;; https://awscli.amazonaws.com/v2/documentation/api/latest/reference/logs/tail.html
   (let* ((buf (saws-async-aws-process
                log-group-name
                "logs"
                (list "tail"
                      log-group-name
-                     "--since" saws-logs-since
+                     "--since" since
                      "--color" "on"
                      "--format" "short"
                      "--follow")
                #'saws-logs-output-mode)))
-    (with-current-buffer buf (setq-local saws--log-group-name log-group-name))
+    (with-current-buffer buf
+      (setq-local saws--log-group-name log-group-name)
+      (setq header-line-format
+            `("" header-line-indent ,(format "%s: %s %s: %s"
+                                             (propertize "Log Group"
+                                                         'font-lock-face
+                                                         'saws-logs-log-group-headerline)
+                                             log-group-name
+                                             (propertize "Since"
+                                                         'font-lock-face
+                                                         'saws-logs-since-headerline)
+                                             since))))
     (display-buffer buf '(display-buffer-reuse-window . nil))))
 
 (provide 'saws-logs)
