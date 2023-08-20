@@ -40,12 +40,20 @@ The value provided can be an ISO 8601 timestamp or a relative time."
   :type 'string)
 
 (defface saws-logs-log-group-headerline
-  '((t (:foreground "green")))
+  '((t (:foreground "SlateBlue" :bold t :underline t)))
   "Face used in log buffer headerlines for \"Log Group\".")
 
+(defface saws-logs-log-group-value-headerline
+  '((t (:foreground "purple")))
+  "Face used in log buffer headerlines for the log group value.")
+
 (defface saws-logs-since-headerline
-  '((t (:foreground "green")))
+  '((t (:foreground "SlateBlue" :bold t :underline t)))
   "Face used in log buffer headerlines for \"Since\".")
+
+(defface saws-logs-since-value-headerline
+  '((t (:foreground "purple")))
+  "Face used in log buffer headerlines for the value of since.")
 
 (defconst saws-logs-time-strings '("1m" "5m" "1h" "2h" "1d"))
 
@@ -156,7 +164,8 @@ If QUERY-STRING is specified, preset the query to filter on it."
                      "--since" since
                      "--color" "on"
                      "--format" "short"
-                     "--follow")
+                     "--follow"
+                     "--no-paginate")
                #'saws-logs-output-mode)))
     (with-current-buffer buf
       (setq-local saws--log-group-name log-group-name)
@@ -165,11 +174,15 @@ If QUERY-STRING is specified, preset the query to filter on it."
                                              (propertize "Log Group"
                                                          'font-lock-face
                                                          'saws-logs-log-group-headerline)
-                                             log-group-name
+                                             (propertize log-group-name
+                                                         'font-lock-face
+                                                         'saws-logs-log-group-value-headerline)
                                              (propertize "Since"
                                                          'font-lock-face
                                                          'saws-logs-since-headerline)
-                                             since))))
+                                             (propertize since
+                                                         'font-lock-face
+                                                         'saws-logs-since-value-headerline)))))
     (display-buffer buf '(display-buffer-reuse-window . nil))))
 
 (provide 'saws-logs)
