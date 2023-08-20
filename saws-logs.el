@@ -80,6 +80,7 @@ The value provided can be an ISO 8601 timestamp or a relative time."
     (define-key map "o" #'saws-logs-open-console)
     (define-key map "q" #'saws-logs-cloudwatch-query)
     (define-key map "t" #'saws-logs-change-time-period)
+    (define-key map "k" #'kill-this-buffer)
     (define-key map "?" #'saws-logs-mode-menu)
     map))
 
@@ -108,6 +109,16 @@ The value provided can be an ISO 8601 timestamp or a relative time."
 ;;           + s(queryDefinitionId)
 ;;           + p("~source~(~'") + s(sourceGroup) + p(')')
 ;;   + p(')');))
+
+(defun saws-logs--read-time-period ()
+  "Read a time period compatible with aws logs tail --since."
+  (completing-read "Since: "
+                   (append saws-logs-time-strings
+                           (and (member saws-logs-since saws-logs-time-strings)
+                                (list saws-logs-since)))
+                   nil
+                   nil
+                   saws-logs-since))
 
 ;;;###autoload
 (defun saws-logs-open-console (&optional log-group-name)
@@ -138,8 +149,15 @@ If QUERY-STRING is specified, preset the query to filter on it."
   (browse-url "https://console.aws.amazon.com/cloudwatch"))
 
 ;;;###autoload
-(defun saws-logs-change-time-period (&optional period)
-  (interactive "period: " saws-logs-output-mode))
+(defun saws-logs-change-time-period (since)
+  "Change the time period in the current saws-logs buffer to SINCE."
+  (interactive (list (saws-logs--read-time-period)) saws-logs-output-mode)
+  (let ((log-group saws--log-group-name)
+        (display-buffer-overriding-action '(display-buffer-same-window . nil))
+        ;; Don't ask for confirmation
+        (kill-buffer-query-functions nil))
+    (kill-buffer)
+    (saws-logs-open-log-group log-group since)))
 
 ;;;###autoload
 (defun saws-logs-open-log-group (log-group-name since)
@@ -148,13 +166,7 @@ If QUERY-STRING is specified, preset the query to filter on it."
    (list
     ;; TODO figure out how to show last written to on another completing read column
     (completing-read "Log group name: " (saws-logs-log-group-names))
-    (completing-read "Since: "
-                     (append saws-logs-time-strings
-                             (and (member saws-logs-since saws-logs-time-strings)
-                                  (list saws-logs-since)))
-                     nil
-                     nil
-                     saws-logs-since)))
+    (saws-logs--read-time-period)))
   ;; https://awscli.amazonaws.com/v2/documentation/api/latest/reference/logs/tail.html
   (let* ((buf (saws-async-aws-process
                log-group-name
