@@ -27,8 +27,15 @@ If INCLUDE-HOME is non-nil, include \"/home\" in the url."
 ;;;###autoload (autoload 'saws "saws" nil t)
 (transient-define-prefix saws ()
   "Transient for everything saws."
-  ["Context"
-   ("R" "Change Region" ignore)
+  :incompatible '(("--us-east-1"
+                   "--eu-west-1"
+                   "--eu-west-2"))
+  ["Region"
+   ("1" "" "--us-east-1")
+   ("2" "" "--eu-west-1")
+   ("3" "" "--eu-west-2")]
+
+  ["Profile"
    ("P" "Change Profile" ignore)]
 
   [["Logs"
@@ -53,13 +60,16 @@ If INCLUDE-HOME is non-nil, include \"/home\" in the url."
    ["EC2"
     ("C-e" "EC2" ignore)
     ("M-e" "Console" saws-console-open-ec2)]
-   ["RDS"
-    ("r" "RDS" ignore)
-    ("R" "Console" saws-console-open-rds)]]
+   ["Cloudfront"
+    ("f" "Cloudfront" ignore)
+    ("F" "Console" saws-console-open-cloudfront)]]
   
   [["S3"
     ("s" "s3" ignore)
-    ("S" "Console" saws-console-open-s3)]])
+    ("S" "Console" saws-console-open-s3)]
+   ["RDS"
+    ("r" "RDS" ignore)
+    ("R" "Console" saws-console-open-rds)]])
 
 (defun saws-console-open-logs ()
   "Open logs in the AWS Console."
@@ -105,6 +115,11 @@ If INCLUDE-HOME is non-nil, include \"/home\" in the url."
   "Open the S3 homepage in the AWS Console."
   (interactive)
   (saws-console-open 's3))
+
+(defun saws-console-open-cloudfront ()
+  "Open the Cloudfront distributions page in the AWS Console."
+  (interactive)
+  (saws-console-open 'cloudfront))
 
 (defun saws-console-open (service)
   "Open SERVICE in the AWS Console."
