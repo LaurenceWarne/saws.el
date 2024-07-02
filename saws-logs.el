@@ -78,8 +78,9 @@ The value provided can be an ISO 8601 timestamp or a relative time."
   (let ((map (make-sparse-keymap)))
     (suppress-keymap map t)
     (define-key map "o" #'saws-logs-open-console)
-    (define-key map "q" #'saws-logs-cloudwatch-query)
+    (define-key map "Q" #'saws-logs-cloudwatch-query-dwim)
     (define-key map "t" #'saws-logs-change-time-period)
+    (define-key map "q" #'kill-this-buffer)
     (define-key map "k" #'kill-this-buffer)
     (define-key map "?" #'saws-logs-mode-menu)
     map))
@@ -95,20 +96,12 @@ The value provided can be an ISO 8601 timestamp or a relative time."
 
 
 ;; https://repost.aws/questions/QUkdGEQP7rQZmDBUaB2Ai2Qg/aws-cloudwatch-log-insights-generate-url
-
-;; (defun saws-logs--cloudwatch-query-string (start end filter)
-;;   ;; %7E%28end
-;;   (concat (url-hexify-string "~(end~'")
-;;           s(end.toUTC().toISO())
-;;           p("~start~'")
-;;           s(start.toUTC().toISO())
-;;           ;; Or use UTC instead of Local
-;;           + p(`~timeType~'${timeType}~tz~'Local~editorString~'`)
-;;           + s(expression)
-;;           + p('~isLiveTail~false~queryId~\'')
-;;           + s(queryDefinitionId)
-;;           + p("~source~(~'") + s(sourceGroup) + p(')')
-;;   + p(')');))
+(defun get-cloudwatch-insights-url (log-group-name)
+  "Generate an AWS CloudWatch Insights URL for the given log group name."
+  (let ((query-url (format "https://console.aws.amazon.com/cloudwatch/home?region=%s#logsV2:logs-insights/query" saws-region))
+        (encoded-log-group (url-hexify-string log-group-name)))
+    (setq encoded-log-group (replace-regexp-in-string "%" "$" encoded-log-group))
+    (format "%s?queryDetail=%s" query-url encoded-log-group)))
 
 (defun saws-logs--read-time-period ()
   "Read a time period compatible with aws logs tail --since."
