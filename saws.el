@@ -15,6 +15,8 @@
 (require 'saws-cloudformation)
 (require 'saws-logs)
 
+(defvar saws-aws-regions '("--us-east-1" "--eu-west-1" "--eu-west-2"))
+
 (cl-defun saws--console-base-url (region service &key (include-home t))
   "Return console base url for REGION and SERVICE.
 
@@ -24,16 +26,21 @@ If INCLUDE-HOME is non-nil, include \"/home\" in the url."
           service
           (if include-home "/home" "")))
 
+(transient-define-argument saws-aws-region--exclusive-switches ()
+  "This is a specialized infix for only selecting one of several values."
+  :class 'transient-switches
+  :argument-format "%s"
+  :argument-regexp (rx-to-string `(or ,@saws-aws-regions))
+  :choices saws-aws-regions)
+
 ;;;###autoload (autoload 'saws "saws" nil t)
 (transient-define-prefix saws ()
   "Transient for everything saws."
   :incompatible '(("--us-east-1"
                    "--eu-west-1"
                    "--eu-west-2"))
-  ["Region"
-   ("1" "" "--us-east-1")
-   ("2" "" "--eu-west-1")
-   ("3" "" "--eu-west-2")]
+  ["Context"
+   ("-r" "AWS Region" saws-aws-region--exclusive-switches)]
 
   ["Profile"
    ("P" "Change Profile" ignore)]
@@ -71,10 +78,13 @@ If INCLUDE-HOME is non-nil, include \"/home\" in the url."
     ("r" "RDS" ignore)
     ("R" "Console" saws-console-open-rds)]])
 
-(defun saws-console-open-logs ()
-  "Open logs in the AWS Console."
-  (interactive)
-  (saws-console-open 'logs))
+(defun saws-console-open-logs (&optional args)
+  "Open logs in the AWS Console using context ARGS."
+  (interactive
+   (list (transient-args transient-current-command)))
+  (let ((saws-region (or (-some--> (car-safe args) (string-remove-prefix "--" it)) saws-region)))
+    (print saws-region)
+    (saws-console-open 'logs)))
 
 (defun saws-console-open-cloudformation ()
   "Open the Cloudformation stacks page in the AWS Console."
