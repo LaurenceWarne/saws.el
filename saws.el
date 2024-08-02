@@ -28,6 +28,7 @@ If INCLUDE-HOME is non-nil, include \"/home\" in the url."
   :class 'transient-switches
   :argument-format "%s"
   :argument-regexp (rx-to-string `(or ,@saws-regions))
+  ;; TODO how can I make this infix use `completing-read'?
   :choices saws-regions
   :key "a"
   :description "AWS Region"
@@ -48,9 +49,6 @@ If INCLUDE-HOME is non-nil, include \"/home\" in the url."
   ["Context"
    (saws--aws-region-infix)
    (saws--aws-profile-infix)]
-
-  ["Profile"
-   ("P" "Change Profile" ignore)]
 
   [["Logs"
     ("l" "Logs" saws-logs)
