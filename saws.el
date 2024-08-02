@@ -25,23 +25,20 @@ If INCLUDE-HOME is non-nil, include \"/home\" in the url."
           (if include-home "/home" "")))
 
 (transient-define-infix saws--aws-region-infix ()
-  "Switch on and off."
   :class 'transient-switches
   :argument-format "%s"
   :argument-regexp (rx-to-string `(or ,@saws-regions))
   :choices saws-regions
-  ;; TODO Why do I have to add a '-' here?!
-  :key "-r"
+  :key "a"
   :description "AWS Region"
   :init-value (lambda (obj) (oset obj value saws-region)))
 
 (transient-define-infix saws--aws-profile-infix ()
-  "Switch on and off."
   :class 'transient-switches
   :argument-format "%s"
   :argument-regexp (rx-to-string `(or ,@saws-profiles))
   :choices saws-profiles
-  :key "-p"
+  :key "p"
   :description "AWS Profile"
   :init-value (lambda (obj) (oset obj value saws-profile)))
 
@@ -92,7 +89,9 @@ If INCLUDE-HOME is non-nil, include \"/home\" in the url."
   "Open logs in the AWS Console using context ARGS."
   (interactive
    (list (transient-args transient-current-command)))
-  (let ((saws-region (or (car-safe args) saws-region)))
+  (print args)
+  (let ((saws-region (or (car-safe args) saws-region))
+        (saws-profile (or (car-safe (cdr args)) saws-profile)))
     (print saws-region)
     (saws-console-open 'logs)))
 
