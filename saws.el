@@ -15,8 +15,6 @@
 (require 'saws-cloudformation)
 (require 'saws-logs)
 
-(defvar saws-aws-regions '("--us-east-1" "--eu-west-1" "--eu-west-2"))
-
 (cl-defun saws--console-base-url (region service &key (include-home t))
   "Return console base url for REGION and SERVICE.
 
@@ -26,21 +24,33 @@ If INCLUDE-HOME is non-nil, include \"/home\" in the url."
           service
           (if include-home "/home" "")))
 
-(transient-define-argument saws-aws-region--exclusive-switches ()
-  "This is a specialized infix for only selecting one of several values."
+(transient-define-infix saws--aws-region-infix ()
+  "Switch on and off."
   :class 'transient-switches
   :argument-format "%s"
-  :argument-regexp (rx-to-string `(or ,@saws-aws-regions))
-  :choices saws-aws-regions)
+  :argument-regexp (rx-to-string `(or ,@saws-regions))
+  :choices saws-regions
+  ;; TODO Why do I have to add a '-' here?!
+  :key "-r"
+  :description "AWS Region"
+  :init-value (lambda (obj) (oset obj value saws-region)))
+
+(transient-define-infix saws--aws-profile-infix ()
+  "Switch on and off."
+  :class 'transient-switches
+  :argument-format "%s"
+  :argument-regexp (rx-to-string `(or ,@saws-profiles))
+  :choices saws-profiles
+  :key "-p"
+  :description "AWS Profile"
+  :init-value (lambda (obj) (oset obj value saws-profile)))
 
 ;;;###autoload (autoload 'saws "saws" nil t)
 (transient-define-prefix saws ()
   "Transient for everything saws."
-  :incompatible '(("--us-east-1"
-                   "--eu-west-1"
-                   "--eu-west-2"))
   ["Context"
-   ("-r" "AWS Region" saws-aws-region--exclusive-switches)]
+   (saws--aws-region-infix)
+   (saws--aws-profile-infix)]
 
   ["Profile"
    ("P" "Change Profile" ignore)]
@@ -82,7 +92,7 @@ If INCLUDE-HOME is non-nil, include \"/home\" in the url."
   "Open logs in the AWS Console using context ARGS."
   (interactive
    (list (transient-args transient-current-command)))
-  (let ((saws-region (or (-some--> (car-safe args) (string-remove-prefix "--" it)) saws-region)))
+  (let ((saws-region (or (car-safe args) saws-region)))
     (print saws-region)
     (saws-console-open 'logs)))
 

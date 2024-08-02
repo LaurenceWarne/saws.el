@@ -34,6 +34,11 @@
   "AWS convenience tools."
   :group 'applications)
 
+(defcustom saws-regions '("us-east-1" "eu-west-1" "eu-west-2")
+  "Regions which will be available for selection in transients."
+  :group 'saws
+  :type 'string)
+
 (defcustom saws-region "us-east-1"
   "The AWS region to use for commands."
   :group 'saws
@@ -43,6 +48,15 @@
   "The AWS profile to use for commands."
   :group 'saws
   :type 'string)
+
+(defun saws--get-profiles ()
+  "Return a list of all user profiles."
+  (split-string (shell-command-to-string "aws configure list-profiles")))
+
+(defcustom saws-profiles (saws--get-profiles)
+  "Profiles which will be available for selection in transients."
+  :group 'saws
+  :type (repeat 'string))
 
 (defvar-local saws--region nil
   "Like `saws-region', but specific to the current buffer.")
