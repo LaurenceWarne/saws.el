@@ -56,7 +56,7 @@
 (defcustom saws-profiles (saws--get-profiles)
   "Profiles which will be available for selection in transients."
   :group 'saws
-  :type (repeat 'string))
+  :type '(repeat string))
 
 (defvar-local saws--region nil
   "Like `saws-region', but specific to the current buffer.")
