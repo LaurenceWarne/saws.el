@@ -59,11 +59,8 @@ The value provided can be an ISO 8601 timestamp or a relative time."
 
 (defvar-local saws--log-group-name nil)
 
-(transient-define-prefix saws-logs (&optional args)
+(transient-define-prefix saws-logs ()
   "Transient for interacting with logs."
-  ["Context"
-   (saws--aws-region-infix)
-   (saws--aws-profile-infix)]
 
   ["Actions"
    ("l" "Open log group" saws-logs-open-log-group)
@@ -98,10 +95,9 @@ The value provided can be an ISO 8601 timestamp or a relative time."
   (--map (alist-get 'logGroupName it)
          (append (cdar (saws-aws-command-to-json "logs describe-log-groups")))))
 
-
 ;; https://repost.aws/questions/QUkdGEQP7rQZmDBUaB2Ai2Qg/aws-cloudwatch-log-insights-generate-url
 (defun get-cloudwatch-insights-url (log-group-name)
-  "Generate an AWS CloudWatch Insights URL for the given log group name."
+  "Generate an AWS CloudWatch Insights URL for LOG-GROUP-NAME."
   (let ((query-url (format "https://console.aws.amazon.com/cloudwatch/home?region=%s#logsV2:logs-insights/query" saws-region))
         (encoded-log-group (url-hexify-string log-group-name)))
     (setq encoded-log-group (replace-regexp-in-string "%" "$" encoded-log-group))

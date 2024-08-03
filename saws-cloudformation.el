@@ -93,7 +93,7 @@
     (async-shell-command cmd)))
 
 ;;;###autoload
-(defun saws-describe-stacks (args)
+(defun saws-describe-stacks (_args)
   "Run \\='aws cloudformation describe-stacks\\=' using ARGS."
   (interactive (list (transient-args transient-current-command)))
   (let* ((output (shell-command-to-string

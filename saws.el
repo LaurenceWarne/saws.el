@@ -14,6 +14,7 @@
 
 (require 'saws-cloudformation)
 (require 'saws-logs)
+(require 'saws-secrets)
 (require 'transient)
 
 (cl-defun saws--console-base-url (region service &key (include-home t))
@@ -107,7 +108,10 @@ If INCLUDE-HOME is non-nil, include \"/home\" in the url."
     ("S" "Console" saws-console-open-s3)]
    ["RDS"
     ("d" "RDS" ignore)
-    ("D" "Console" saws-console-open-rds)]])
+    ("D" "Console" saws-console-open-rds)]
+   ["Secrets"
+    ("#" "Secrets" saws-secrets)
+    ("~" "Console" saws-console-open-secrets)]])
 
 (defun saws-console-open-logs ()
   "Open logs in the AWS Console."
@@ -159,6 +163,11 @@ If INCLUDE-HOME is non-nil, include \"/home\" in the url."
   (interactive)
   (saws-console-open 'cloudfront))
 
+(defun saws-console-open-secrets ()
+  "Open the AWS Secrets page in the AWS Console."
+  (interactive)
+  (saws-console-open 'secrets))
+
 (defun saws-console-open (service)
   "Open SERVICE in the AWS Console."
   (interactive)
@@ -182,6 +191,8 @@ If INCLUDE-HOME is non-nil, include \"/home\" in the url."
      (saws--console-base-url saws-region "ec2"))
     ((eq service 'health)
      "https://health.aws.amazon.com/health/home#/account/dashboard/open-issues")
+    ((eq service 'secrets)
+     (saws--console-base-url saws-region "secrets"))
     (t (user-error "Service '%s' unknown or not supported" service)))))
 
 (provide 'saws)
