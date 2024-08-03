@@ -14,6 +14,7 @@
 
 (require 'saws-cloudformation)
 (require 'saws-logs)
+(require 'transient)
 
 (cl-defun saws--console-base-url (region service &key (include-home t))
   "Return console base url for REGION and SERVICE.
@@ -24,24 +25,49 @@ If INCLUDE-HOME is non-nil, include \"/home\" in the url."
           service
           (if include-home "/home" "")))
 
+(defclass saws--transient-variable (transient-variable)
+  ((scope :initarg :scope)))
+
+;; Copied from https://github.com/alphapapa/org-ql/blob/b7d4856f926cb71e01427a940dc948a48b0a702d/org-ql-view.el#L724
+;; no clue why this isn't done OOTB by transient
+(cl-defmethod transient-infix-set ((obj saws--transient-variable) value)
+  "Use VALUE to set the value of OBJ and the variable value."
+  (let ((variable (oref obj variable)))
+    (oset obj value value)
+    (set (make-local-variable (oref obj variable)) value)
+    (unless (or value transient--prefix)
+      (message "Unset %s" variable))))
+
+;; https://github.com/akirak/emacs-config/blob/e18447bb19059c63cb26188f393718aa7da76f7f/emacs/lisp/akirak-transient.el#L21
+(cl-defmethod transient-format-value ((obj saws--transient-variable))
+  "Format the value of OBJ using the variable value."
+  (let ((value (oref obj value)))
+    (concat
+     (propertize "(" 'face 'transient-inactive-value)
+     (propertize (format "%s" value) 'face 'transient-value)
+     (propertize ")" 'face 'transient-inactive-value))))
+
 (transient-define-infix saws--aws-region-infix ()
-  :class 'transient-switches
-  :argument-format "%s"
-  :argument-regexp (rx-to-string `(or ,@saws-regions))
-  ;; TODO how can I make this infix use `completing-read'?
+  :class 'saws--transient-variable
   :choices saws-regions
-  :key "a"
+  :argument ""
+  :key saws--region-key
   :description "AWS Region"
-  :init-value (lambda (obj) (oset obj value saws-region)))
+  :init-value (lambda (obj) (oset obj value saws-region))
+  :always-read t
+  :allow-empty nil
+  :variable 'saws-region)
 
 (transient-define-infix saws--aws-profile-infix ()
-  :class 'transient-switches
-  :argument-format "%s"
-  :argument-regexp (rx-to-string `(or ,@saws-profiles))
+  :class 'saws--transient-variable
   :choices saws-profiles
-  :key "p"
+  :argument ""
+  :key saws--profile-key
   :description "AWS Profile"
-  :init-value (lambda (obj) (oset obj value saws-profile)))
+  :init-value (lambda (obj) (oset obj value saws-profile))
+  :always-read t
+  :allow-empty nil
+  :variable 'saws-profile)
 
 ;;;###autoload (autoload 'saws "saws" nil t)
 (transient-define-prefix saws ()
@@ -83,15 +109,10 @@ If INCLUDE-HOME is non-nil, include \"/home\" in the url."
     ("r" "RDS" ignore)
     ("R" "Console" saws-console-open-rds)]])
 
-(defun saws-console-open-logs (&optional args)
-  "Open logs in the AWS Console using context ARGS."
-  (interactive
-   (list (transient-args transient-current-command)))
-  (print args)
-  (let ((saws-region (or (car-safe args) saws-region))
-        (saws-profile (or (car-safe (cdr args)) saws-profile)))
-    (print saws-region)
-    (saws-console-open 'logs)))
+(defun saws-console-open-logs ()
+  "Open logs in the AWS Console."
+  (interactive)
+  (saws-console-open 'logs))
 
 (defun saws-console-open-cloudformation ()
   "Open the Cloudformation stacks page in the AWS Console."

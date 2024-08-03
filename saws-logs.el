@@ -59,8 +59,12 @@ The value provided can be an ISO 8601 timestamp or a relative time."
 
 (defvar-local saws--log-group-name nil)
 
-(transient-define-prefix saws-logs ()
+(transient-define-prefix saws-logs (&optional args)
   "Transient for interacting with logs."
+  ["Context"
+   (saws--aws-region-infix)
+   (saws--aws-profile-infix)]
+
   ["Actions"
    ("l" "Open log group" saws-logs-open-log-group)
    ("o" "Open aws console" saws-logs-open-console)
