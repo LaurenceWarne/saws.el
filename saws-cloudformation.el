@@ -28,6 +28,8 @@
 ;;; Code:
 
 (require 'saws-core)
+(require 'tablist)
+(require 'transient)
 
 (defvar saws-stack-columns [("Name" 20 t) ("Status" 10 t)])
 
@@ -41,7 +43,7 @@
    ("o" "open aws console" saws-deploy-open-console)
    ("O" "open documentation for resource" ignore)])
 
-;;;###autoload (autoload 'saws "saws-cloudformation" nil t)
+;;;###autoload (autoload 'saws "saws-deploy" nil t)
 (transient-define-prefix saws-deploy ()
   "Transient for running cloudformation deploy commands."
   ;;:man-page "aws cloudformation deploy help"
@@ -121,7 +123,7 @@
                                 (lambda (&rest _) (tablist-revert))))))))
 
 ;;;###autoload
-(defun saws-deploy-open-console (&rest args)
+(defun saws-deploy-open-console (&rest _args)
   "Open the aws deploy page in the aws console."
   (interactive (list (transient-args transient-current-command)))
   (browse-url "https://console.aws.amazon.com/cloudformation/home?region=us-east-1#/stacks?filteringStatus=active&filteringText=&viewNested=true&hideStacks=false"))
