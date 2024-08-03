@@ -4,7 +4,13 @@
 
 ## Usage
 
-### `saws-logs-open-log-group`
+The main entry point is `M-x` `saws`:
+
+![saws-transient](https://github.com/user-attachments/assets/3bdcff76-fd89-4538-ac51-df71ac9efb59)
+
+From this prefix command, the AWS region and profile can be set, and the following subcommands can be invoked:
+
+### `l` -> `saws-logs-open-log-group`
 
 Prompts the user for a log group and a relative time, and sticks output in a prettified buffer:
 
