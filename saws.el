@@ -106,8 +106,8 @@ If INCLUDE-HOME is non-nil, include \"/home\" in the url."
     ("s" "s3" ignore)
     ("S" "Console" saws-console-open-s3)]
    ["RDS"
-    ("r" "RDS" ignore)
-    ("R" "Console" saws-console-open-rds)]])
+    ("d" "RDS" ignore)
+    ("D" "Console" saws-console-open-rds)]])
 
 (defun saws-console-open-logs ()
   "Open logs in the AWS Console."

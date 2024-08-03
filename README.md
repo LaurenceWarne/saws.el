@@ -6,7 +6,7 @@
 
 The main entry point is `M-x` `saws`:
 
-![saws-transient](https://github.com/user-attachments/assets/3bdcff76-fd89-4538-ac51-df71ac9efb59)
+![saws-transient](https://github.com/user-attachments/assets/b5542943-abb5-4755-93ed-de4c31d477fc)
 
 From this prefix command, the AWS region and profile can be set, and the following subcommands can be invoked:
 

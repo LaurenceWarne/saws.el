@@ -64,7 +64,7 @@
 (defvar-local saws--profile nil
   "Like `saws-profile', but specific to the current buffer.")
 
-(defconst saws--region-key "a")
+(defconst saws--region-key "r")
 (defconst saws--profile-key "p")
 
 (define-derived-mode saws-command-output-mode comint-mode "Saws-Command"
