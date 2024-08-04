@@ -28,16 +28,12 @@
 ;;; Code:
 
 (require 'comint)
+(require 'dash)
 (require 'json)
 
 (defgroup saws nil
   "AWS convenience tools."
   :group 'applications)
-
-(defcustom saws-regions '("us-east-1" "eu-west-1" "eu-west-2")
-  "Regions which will be available for selection in transients."
-  :group 'saws
-  :type 'string)
 
 (defcustom saws-region "us-east-1"
   "The AWS region to use for commands."
@@ -46,6 +42,34 @@
 
 (defcustom saws-profile "default"
   "The AWS profile to use for commands."
+  :group 'saws
+  :type 'string)
+
+(defun saws-aws-command (command)
+  "Run the aws command COMMAND."
+  (let ((cmd (format "aws %s --profile %s --region %s"
+                     command
+                     saws-profile
+                     saws-region)))
+    (shell-command-to-string cmd)))
+
+(defun saws-aws-command-to-json (command)
+  "Run the aws command COMMAND and read into a json object."
+  (let ((command-output (saws-aws-command command)))
+    (condition-case err
+        (json-read-from-string command-output)
+      (error (error
+              "Encountered error '%s' whilst running command '%s', output: '%s'"
+              err
+              command
+              command-output)))))
+
+(defun saws--get-regions ()
+  "Return a list of all user profiles."
+  (append (saws-aws-command-to-json "account list-regions --query='Regions[*].RegionName' --no-paginate") nil))
+
+(defcustom saws-regions (or (ignore-errors (saws--get-regions)) '("us-east-1" "eu-west-1" "eu-west-2"))
+  "Regions which will be available for selection in transients."
   :group 'saws
   :type 'string)
 
@@ -80,14 +104,6 @@
   (setq-local saws--profile saws-profile
               saws--region saws-region))
 
-(defun saws-aws-command (command)
-  "Run the aws command COMMAND."
-  (let ((cmd (format "aws %s --profile %s --region %s"
-                     command
-                     saws-profile
-                     saws-region)))
-    (shell-command-to-string cmd)))
-
 (defun saws-async-aws-process (name command args &optional mode)
   "Run the aws command COMMAND with ARGS, and return the process buffer.
 
@@ -106,17 +122,6 @@ mode."
                          "--profile" saws-profile)))
     (with-current-buffer buf (if mode (funcall mode) (saws-command-output-mode)))
     buf))
-
-(defun saws-aws-command-to-json (command)
-  "Run the aws command COMMAND and read into a json object."
-  (let ((command-output (saws-aws-command command)))
-    (condition-case err
-        (json-read-from-string command-output)
-      (error (message
-              "Encountered error '%s' whilst running command '%s', output: '%s'"
-              err
-              command
-              command-output)))))
 
 (provide 'saws-core)
 ;;; saws-core.el ends here
