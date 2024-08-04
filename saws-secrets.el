@@ -27,7 +27,9 @@
 
 ;;; Code:
 
+(require 'dash)
 (require 'transient)
+(require 's)
 (require 'saws-core)
 
 (transient-define-prefix saws-secrets ()
