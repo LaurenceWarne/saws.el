@@ -82,12 +82,6 @@
   :group 'saws
   :type '(repeat string))
 
-(defvar-local saws--region nil
-  "Like `saws-region', but specific to the current buffer.")
-
-(defvar-local saws--profile nil
-  "Like `saws-profile', but specific to the current buffer.")
-
 (defconst saws--region-key "r")
 (defconst saws--profile-key "p")
 
@@ -100,9 +94,7 @@
   (buffer-disable-undo)
   (setq buffer-read-only t)
   ;; https://emacs.stackexchange.com/questions/42152/enable-dir-locals-el-variables-inside-just-opened-buffer
-  (hack-dir-local-variables-non-file-buffer)
-  (setq-local saws--profile saws-profile
-              saws--region saws-region))
+  (hack-dir-local-variables-non-file-buffer))
 
 (defun saws-async-aws-process (name command args &optional mode)
   "Run the aws command COMMAND with ARGS, and return the process buffer.

@@ -125,7 +125,7 @@ open the cloudwatch console."
   (interactive (list saws--log-group-name) saws-logs-output-mode)
   (message "Opening '%s'" log-group-name)
   (browse-url (format "https://%s.console.aws.amazon.com/cloudwatch/?region=%1$s#logsV2:log-groups/log-group/%s"
-                      saws--region
+                      saws-region
                       ;; https://stackoverflow.com/questions/60796991/is-there-a-way-to-generate-the-aws-console-urls-for-cloudwatch-log-group-filters
                       (s-replace "/" "$252F" log-group-name))))
 
@@ -149,9 +149,11 @@ If QUERY-STRING is specified, preset the query to filter on it."
   (let ((log-group saws--log-group-name)
         (display-buffer-overriding-action '(display-buffer-same-window . nil))
         ;; Don't ask for confirmation
-        (kill-buffer-query-functions nil))
-    (kill-buffer)
-    (saws-logs-open-log-group log-group since)))
+        (kill-buffer-query-functions nil)
+        (buf (current-buffer)))
+    (saws-logs-open-log-group log-group since)
+    ;; Kill after so we propagate `saws-region' and `saws-profile' to the new log buffer
+    (kill-buffer buf)))
 
 ;;;###autoload
 (defun saws-logs-open-log-group (log-group-name since)
@@ -172,9 +174,13 @@ If QUERY-STRING is specified, preset the query to filter on it."
                      "--format" "short"
                      "--follow"
                      "--no-paginate")
-               #'saws-logs-output-mode)))
+               #'saws-logs-output-mode))
+         (saved-region saws-region)
+         (saved-profile saws-profile))
     (with-current-buffer buf
-      (setq-local saws--log-group-name log-group-name)
+      (setq-local saws--log-group-name log-group-name
+                  saws-region saved-region
+                  saws-profile saved-profile)
       (setq header-line-format
             `("" header-line-indent ,(format "%s: %s %s: %s"
                                              (propertize "Log Group"
