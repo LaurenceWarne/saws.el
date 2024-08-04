@@ -46,14 +46,28 @@
 
 (defun saws-secrets-get-secret-names ()
   "Return a list of secret names."
-  (append (saws-aws-command-to-json "secretsmanager list-secrets --query='SecretList[*].Name'") nil))
+  (append (saws-aws-command-to-json "secretsmanager list-secrets --query='SecretList[*]' --no-paginate") nil))
+
+(defun saws--secrets-secrets-annotate (secret max-secret-name-len)
+  "Annotate SECRET given preview given MAX-SECRET-NAME-LEN."
+  (let ((fill-length (- max-secret-name-len (length (alist-get 'Name secret)))))
+    (format "%s  %s"
+            (s-repeat fill-length " ")
+            (car (s-split "T" (alist-get 'CreatedDate secret))))))
 
 ;;;###autoload
 (defun saws-secrets-copy-value (secret-name)
   "Copy the secret SECRET-NAME to the kill ring."
   (interactive
    (list
-    (completing-read "Secret name: " (saws-secrets-get-secret-names))))
+    (let* ((secrets (saws-secrets-get-secret-names))
+           (secrets-alist (--map (cons (alist-get 'Name it) it) secrets))
+           (mx-secret-name-len (-max (--map (length (alist-get 'Name it)) secrets)))
+           (completion-extra-properties
+            '(:annotation-function
+              (lambda (k) (saws--secrets-secrets-annotate (alist-get k secrets-alist nil nil #'string=)
+                                                          mx-secret-name-len)))))
+      (completing-read "Secret name: " (-map #'car secrets-alist)))))
   (kill-new (saws-secrets-get-secret secret-name))
   (message "Copied '%s' to the kill ring" secret-name))
 
