@@ -30,6 +30,7 @@
 (require 'ansi-color)
 (require 'transient)
 (require 'dash)
+(require 's)
 (require 'saws-core)
 
 (defcustom saws-logs-since "1h"
@@ -129,7 +130,7 @@ open the cloudwatch console."
                       (s-replace "/" "$252F" log-group-name))))
 
 ;;;###autoload
-(defun saws-logs-cloudwatch-query-dwim (&optional log-group-name query-string)
+(defun saws-logs-cloudwatch-query-dwim (&optional _log-group-name query-string)
   "Open the cloudwatch console for LOG-GROUP-NAME.
 
 If QUERY-STRING is specified, preset the query to filter on it."
