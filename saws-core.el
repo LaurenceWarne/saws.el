@@ -45,12 +45,18 @@
   :group 'saws
   :type 'string)
 
+(defcustom saws-echo-commands nil
+  "If non-nil echo any aws commands used to the minibuffer."
+  :group 'saws
+  :type 'string)
+
 (defun saws-aws-command (command)
   "Run the aws command COMMAND."
   (let ((cmd (format "aws %s --profile %s --region %s"
                      command
                      saws-profile
                      saws-region)))
+    (when saws-echo-commands (message cmd))
     (shell-command-to-string cmd)))
 
 (defun saws-aws-command-to-json (command)
