@@ -114,6 +114,16 @@ The value provided can be an ISO 8601 timestamp or a relative time."
                    nil
                    saws-logs-since))
 
+(defun saws-logs--read-secondary--inputs ()
+  "Read a time period compatible with aws logs tail --since, and also other inputs like pattern filter."
+  (split-string (completing-read "Since: "
+                                 (append saws-logs-time-strings
+                                         (and (member saws-logs-since saws-logs-time-strings)
+                                              (list saws-logs-since)))
+                                 nil
+                                 nil
+                                 saws-logs-since)))
+
 ;;;###autoload
 (defun saws-logs-open-console (&optional log-group-name)
   "Open the log group with LOG-GROUP-NAME in the AWS console.
@@ -156,24 +166,26 @@ If QUERY-STRING is specified, preset the query to filter on it."
     (kill-buffer buf)))
 
 ;;;###autoload
-(defun saws-logs-open-log-group (log-group-name since)
-  "Open the log group with LOG-GROUP-NAME from SINCE."
+(defun saws-logs-open-log-group (log-group-name since &optional filter-pattern)
+  "Open the log group with LOG-GROUP-NAME from SINCE using FILTER-PATTERN."
   (interactive
-   (list
-    ;; TODO figure out how to show last written to on another completing read column
-    (completing-read "Log group name: " (saws-logs-log-group-names))
-    (saws-logs--read-time-period)))
+   (append (list
+            ;; TODO figure out how to show last written to on another completing read column
+            (completing-read "Log group name: " (saws-logs-log-group-names)))
+           (saws-logs--read-secondary--inputs)))
   ;; https://awscli.amazonaws.com/v2/documentation/api/latest/reference/logs/tail.html
   (let* ((buf (saws-async-aws-process
                log-group-name
                "logs"
-               (list "tail"
-                     log-group-name
-                     "--since" since
-                     "--color" "on"
-                     "--format" "short"
-                     "--follow"
-                     "--no-paginate")
+               (append (list "tail"
+                             log-group-name
+                             "--since" since
+                             "--color" "on"
+                             "--format" "short"
+                             "--follow"
+                             "--no-paginate")
+                       (when filter-pattern
+                         (list "--filter-pattern" (concat "%" filter-pattern "%"))))
                #'saws-logs-output-mode))
          (saved-region saws-region)
          (saved-profile saws-profile))
