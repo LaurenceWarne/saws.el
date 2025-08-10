@@ -42,19 +42,23 @@ The value provided can be an ISO 8601 timestamp or a relative time."
 
 (defface saws-logs-log-group-headerline
   '((t (:foreground "SlateBlue" :bold t :underline t)))
-  "Face used in log buffer headerlines for \"Log Group\".")
+  "Face used in log buffer headerlines for \"Log Group\"."
+  :group 'saws)
 
 (defface saws-logs-log-group-value-headerline
   '((t (:foreground "purple")))
-  "Face used in log buffer headerlines for the log group value.")
+  "Face used in log buffer headerlines for the log group value."
+  :group 'saws)
 
 (defface saws-logs-since-headerline
   '((t (:foreground "SlateBlue" :bold t :underline t)))
-  "Face used in log buffer headerlines for \"Since\".")
+  "Face used in log buffer headerlines for \"Since\"."
+  :group 'saws)
 
 (defface saws-logs-since-value-headerline
   '((t (:foreground "purple")))
-  "Face used in log buffer headerlines for the value of since.")
+  "Face used in log buffer headerlines for the value of since."
+  :group 'saws)
 
 (defconst saws-logs-time-strings '("1m" "5m" "1h" "2h" "1d"))
 
@@ -115,7 +119,9 @@ The value provided can be an ISO 8601 timestamp or a relative time."
                    saws-logs-since))
 
 (defun saws-logs--read-secondary--inputs ()
-  "Read a time period compatible with aws logs tail --since, and also other inputs like pattern filter."
+  "Read a time period compatible with aws logs tail --since, and also other inputs.
+
+For example 1d --filter hi"
   (split-string (completing-read "Since: "
                                  (append saws-logs-time-strings
                                          (and (member saws-logs-since saws-logs-time-strings)
@@ -140,16 +146,9 @@ open the cloudwatch console."
                       (s-replace "/" "$252F" log-group-name))))
 
 ;;;###autoload
-(defun saws-logs-cloudwatch-query-dwim (&optional _log-group-name query-string)
-  "Open the cloudwatch console for LOG-GROUP-NAME.
-
-If QUERY-STRING is specified, preset the query to filter on it."
-  (interactive
-   "query: "
-   (list saws--log-group-name (when (region-active-p) (buffer-substring-no-properties
-                                                       (region-beginning) (region-end))))
-   saws-logs-output-mode)
-  (when query-string (message "Using preset filter sting '%s'" query-string))
+(defun saws-logs-cloudwatch-query-dwim (&optional _log-group-name)
+  "Open the cloudwatch console for LOG-GROUP-NAME."
+  (interactive)
   (browse-url "https://console.aws.amazon.com/cloudwatch"))
 
 ;;;###autoload

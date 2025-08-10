@@ -67,10 +67,11 @@
       (when (null secrets-alist) (user-error "No secrets found"))
       (let* ((mx-secret-name-len (-max (--map (length (alist-get 'Name it)) secrets)))
              (completion-extra-properties
-              '(:annotation-function
-                (lambda (k) (saws--secrets-secrets-annotate (alist-get k secrets-alist nil nil #'string=)
-                                                            mx-secret-name-len))))))
-      (completing-read "Secret name: " (-map #'car secrets-alist)))))
+              (list :annotation-function
+                    (lambda (k) (saws--secrets-secrets-annotate
+                                 (alist-get k secrets-alist nil nil #'string=)
+                                 mx-secret-name-len)))))
+        (completing-read "Secret name: " (-map #'car secrets-alist))))))
   (kill-new (saws-secrets-get-secret secret-name))
   (message "Copied '%s' to the kill ring" secret-name))
 

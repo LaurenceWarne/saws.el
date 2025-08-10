@@ -8,4 +8,4 @@
 
 (require 'buttercup)
 
-(require 'saws.el)
+(require 'saws)

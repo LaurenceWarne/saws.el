@@ -30,6 +30,7 @@
 (require 'comint)
 (require 'dash)
 (require 'json)
+(require 's)
 
 (defgroup saws nil
   "AWS convenience tools."
