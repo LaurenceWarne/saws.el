@@ -8,8 +8,7 @@ Currently installing from source is the only option:
 
 ```elisp
 (use-package saws
-  :ensure nil
-  :quelpa (saws :fetcher github :repo "LaurenceWarne/saws" :upgrade t)
+  :vc (:url "https://github.com/LaurenceWarne/saws.el" :rev :newest)
   :commands saws)
 ```
 
