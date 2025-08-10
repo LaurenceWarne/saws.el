@@ -50,10 +50,11 @@
   :group 'saws
   :type 'string)
 
-(defun saws-aws-command (command)
-  "Run the aws command COMMAND."
-  (let ((cmd (format "aws %s --profile %s --region %s"
+(defun saws-aws-command (command &rest args)
+  "Run the aws command COMMAND with ARGS."
+  (let ((cmd (format "aws %s %s --profile %s --region %s"
                      command
+                     (s-join " " args)
                      saws-profile
                      saws-region)))
     (when saws-echo-commands (message cmd))
@@ -61,7 +62,7 @@
 
 (defun saws-aws-command-to-json (command)
   "Run the aws command COMMAND and read into a json object."
-  (let ((command-output (saws-aws-command command)))
+  (let ((command-output (saws-aws-command command "--output" "json")))
     (condition-case err
         (json-read-from-string command-output)
       (error (error
