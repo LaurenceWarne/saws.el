@@ -51,6 +51,11 @@
   :group 'saws
   :type 'string)
 
+(defcustom saws-sso-autologin t
+  "If true, attempt to re-authenticate if sso credentials are expired."
+  :group 'saws
+  :type 'string)
+
 (defun saws-aws-command (command &rest args)
   "Run the aws command COMMAND with ARGS."
   (let ((cmd (format "aws %s %s --profile %s --region %s"
@@ -59,7 +64,18 @@
                      saws-profile
                      saws-region)))
     (when saws-echo-commands (message cmd))
-    (shell-command-to-string cmd)))
+    (let ((result (shell-command-to-string cmd)))
+      (if (and saws-sso-autologin
+               (s-contains-p "Error when retrieving token from sso: Token has expired and refresh failed"
+                             result t))
+          (progn (message "Logging in with aws sso...")
+                 (saws-sso-login saws-profile)
+                 (shell-command-to-string cmd))
+        result))))
+
+(defun saws-sso-login (profile)
+  "Retrieve and cache an AWS SSO access token for profile PROFILE."
+  (shell-command-to-string (format "aws sso login --no-paginate --profile %s" profile)))
 
 (defun saws-aws-command-to-json (command)
   "Run the aws command COMMAND and read into a json object."
