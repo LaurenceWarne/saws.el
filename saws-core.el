@@ -52,7 +52,14 @@
   :type 'string)
 
 (defcustom saws-sso-autologin t
-  "If true, attempt to re-authenticate if sso credentials are expired."
+  "If non-nil, attempt to re-authenticate if SSO credentials are expired.
+
+Note this requires the `password-store' package."
+  :group 'saws
+  :type 'boolean)
+
+(defcustom saws-sso-pass-entry nil
+  "If non-nil, copy this entry to the kill ring prior to attempting to login with SSO."
   :group 'saws
   :type 'string)
 
@@ -69,6 +76,11 @@
                (s-contains-p "Error when retrieving token from sso: Token has expired and refresh failed"
                              result t))
           (progn (message "Logging in with aws sso...")
+                 (when saws-sso-pass-entry
+                   (if (require 'password-store nil t)
+                       (progn (password-store-copy saws-sso-pass-entry)
+                              (message "Copied password entry %s to kill ring" saws-sso-pass-entry))
+                     (user-error "saws-sso-pass-entry is set, but password-store is not installed")))
                  (saws-sso-login saws-profile)
                  (shell-command-to-string cmd))
         result))))
